@@ -1,0 +1,17 @@
+
+N+1xN+1 boyutunda bir matris, her satırının sonuda satırdaki N elemanın toplamını, her
+sütunun sonunda sütundaki N elemanın toplamını, N+1’inci satır N+1’inci sütunda ise tüm satır
+ve sütun toplamlarını ifade etmektedir.
+
+
+
+Yukarıda ifade edilen matrisi elde eden programı aşağıdaki şartları sağlayacak şekilde C
+dilinde kodlayınız.
+1. NxN matrisinin boyutu(N) kullancıdan alınmalıdır.
+2. NxN boyutlu matris bellekte dinamik olarak oluşturulmalıdır.
+3. Dinamik olarak oluşturulan matris 1-100 aralığında tamsayılarla random olarak
+doldurulmalıdır.
+4. NxN boyutundaki matris N+1 x N+1 boyutlu olacak şekilde dinamik olarak
+genişletilmelidir.
+5. Sonuçlar hesaplandıktan sonra elde edilen matris ekrana yazdırılmalıdır.
+6. Bellekte ayrılan alanlar serbest bırakılmalıdır.

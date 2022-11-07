@@ -1,0 +1,1 @@
+enum OPERATIONS { topla, cikar, bol, carp, faktoriyel,bitir};

@@ -1,0 +1,1 @@
+bir dizi icerisindeki en kucuk ve en buyuk 2 elemanı bulan algoritmayı tasarlayınız

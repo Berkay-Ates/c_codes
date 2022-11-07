@@ -1,0 +1,21 @@
+#include<stdio.h>
+#include<stdlib.h>
+ 
+int main(){
+
+    int sizeOfarray = 0;
+    int i = 0;
+    int* arrayOfUser;
+    printf("enter size of your array: ");
+    scanf("%d",&sizeOfarray);
+    arrayOfUser = (int*) malloc(sizeof(int)*sizeOfarray);
+    //arrayOfUser = (int*) calloc(sizeOfarray,sizeof(int));
+    
+    for ( i = 0; i < sizeOfarray; i++){
+        printf("%d. element of array is : %p, %d\n",i,&(arrayOfUser[i]),arrayOfUser[i]);
+    } 
+    
+    scanf("%d",&sizeOfarray);
+    free(arrayOfUser);
+    return 0;
+}
