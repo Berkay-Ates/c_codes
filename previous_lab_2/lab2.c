@@ -33,8 +33,9 @@ int main(){
     //TODO assign Random values;
     for(i=0;i<row;i++){
         for(j=0;j<column;j++){
-            rnd = random()%15;
-            matrix[i][j] = rnd;
+            rnd = rand()%15;
+             matrix[i][j] = rnd;
+            // *(*(matrix+i)+j)  = rnd;
         }
     }
 
@@ -44,6 +45,7 @@ int main(){
     int **pointer = (int**) realloc(matrix,(row+1)*sizeof(int*));
     if(pointer != NULL){
         matrix=pointer;
+
     }else{
         printf("matrix does not allocated");
         return -1;
