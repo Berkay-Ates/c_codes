@@ -15,12 +15,6 @@ typedef struct employee{
     LISTROLES listRole;
 }EMPLOYEE;
 
-//* typedef struct employeeNode* EMP_NODE_POINTER;
-//* typedef struct employeeNode{
-//*     EMPLOYEE empData;
-//*     EMP_POINTER nextEmp;
-//* } EMPNODE ;
-
 void printEmployees(int empNumber,EMPLOYEE* employees);
 char* getNodeRole(EMPLOYEE emp);
 char* getCompanyRole(EMPLOYEE emp);
@@ -98,7 +92,6 @@ char* getNodeRole(EMPLOYEE emp){
        return "tail node";
     }
 }
-
 
 
 char* getCompanyRole(EMPLOYEE emp){
