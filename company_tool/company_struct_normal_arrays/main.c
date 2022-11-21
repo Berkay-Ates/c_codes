@@ -13,6 +13,7 @@ typedef struct employee{
     int age;
     ROLES companyRole;
     LISTROLES listRole;
+    EMP_POINTER next;
 }EMPLOYEE;
 
 void printEmployees(int empNumber,EMPLOYEE* employees);

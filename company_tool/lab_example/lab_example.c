@@ -70,6 +70,7 @@ int main(){
         }
 
     }while(flag == 1);
+    free(employees);
 }
 
 
