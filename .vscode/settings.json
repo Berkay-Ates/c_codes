@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.py": "python",
+        "bee_header.h": "c",
+        "bee_macros.h": "c"
+    }
+}
