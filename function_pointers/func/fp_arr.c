@@ -11,7 +11,6 @@ int main(){
     int product = funcArr[2](20,5); 
     //* int degiskenleri arr de tanımlamdıgıızda o an product icerisinde bulunan sacma bir deger gelmis oldu 
     printf("%d",product);
-    
 }
 
 

@@ -161,7 +161,6 @@ EMPLOYEE* swap(EMPLOYEE* ptr1, EMPLOYEE* ptr2){
 	DATA* tmp = ptr2->d;
 	ptr2->d = ptr1->d;
 	ptr1->d = tmp;
-	
 	return ptr2;
 }
 
