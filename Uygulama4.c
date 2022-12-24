@@ -137,6 +137,7 @@ int removeRecord(EMPLOYEE **head){
 	int found = 0;
 	printf("Enter id :");
 	scanf("%s",id);
+	
 	EMPLOYEE *tmp = *head;
 	EMPLOYEE *prev = NULL;
 	while(tmp != NULL && !found){
