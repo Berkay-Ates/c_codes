@@ -57,7 +57,13 @@ typedef struct KitapOdunc{
 typedef enum mainMenu {student,book,writers,exitMainMenu} MAINMENU;
 typedef enum writerOptions {addWriter,removeWriter,listWriters,updateWriter,writerInfo,exitWriters} WRITERMENU;
 typedef enum studentOptions {addStd,removeStd,updateStd,listStd,stdInfo,unSubmittedStd,bannedStd,submitBook,barrowBook,exitStd} STUDENTMENU; 
-typedef enum bookOptions {addBook,removeBook,updateBook,BookInfo,lateBooks,shelfBook,matchBWrt,updataBWrt,listBooks,listBookHistory,exitBook} BOOKMENU;
+typedef enum bookOptions {addBook,removeBook,updateBook,BookInfo,lateBooks,shelfBook,matchBWrt,updataBWrt,listBooks,listBookHistory,writerBook,exitBook} BOOKMENU;
+
+//* enum set functions
+MAINMENU setMainMenuOptions(int selected);
+WRITERMENU setWriterMenuOptions(int selected);
+STUDENTMENU setStudentMenuOptions(int selected);
+BOOKMENU setBookMenuOptions(int selected);
 
 //* writer func macros 
 void print(char *msg);
@@ -65,18 +71,18 @@ void printDiv();
 char* addWriterToList(YAZAR** head,char* writerName,char* writerSurname);
 void readWriterFile(FILE* file,YAZAR **head );
 void printWriters(YAZAR *head);
-char* removeWriterFromList(YAZAR **head, int id);
+char* removeWriterFromList(YAZAR **head, int id,KITAPYAZAR* bookWriter,int totalBookWriter);
 char* updateWriterFromList(YAZAR** head,int writerID,char* writerName,char* writerSurname);
-void writeWriterListToWriterFile(FILE *file,YAZAR *head);
+void writeWriterListToWriterFile(FILE *file,YAZAR *head,int freeList);
 void printWriterNode(int id,char* name,char* surname);
 
 //* student funcs macros
 void readStdFromFile(FILE* stdFile,OGRENCI** stdHead);
-void writeStdFileFromList(FILE* stdFile,OGRENCI *stdHead);
+void writeStdFileFromList(FILE* stdFile,OGRENCI *stdHead, int freeList);
 char* addStdToList(OGRENCI** stdHead,char* number,char* name,char* surname,int point);
 void printStdList(OGRENCI* head);
 char* removeStdFromList(OGRENCI **stdHead,char* name);
-char* updateStdFromList(OGRENCI **stdHead,char* stdId,char* stdName,char* stdSurname);
+char* updateStdFromList(OGRENCI **stdHead,char* stdId,char* stdName,char* stdSurname,int stdScore);
 void printStdInfo(OGRENCI* stdHead,char* stdName,KITAP * booksHead,int totalBookOpr, KITAPODUNC* bookHistory);
 void printStdNode(OGRENCI* tmp);
 void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std);
@@ -86,8 +92,8 @@ int chekStdDetail(OGRENCI* stdHead,char* stdID);
 
 //* book funcs macros 
 void readBooksFileToList(FILE* bookFile,KITAP** booksHead,int totalOperations,KITAPODUNC* bookOperationHistory);
-void writeBookBorrowFileFromList(FILE* bookBorrowFile,KITAPODUNC* bookBorrowList,int* totalBookOperations);
-void writeBookFileFromBookList(FILE *file, KITAP* bookHead);
+void writeBookBorrowFileFromList(FILE* bookBorrowFile,KITAPODUNC* bookBorrowList,int* totalBookOperations,int freeList);
+void writeBookFileFromBookList(FILE *file, KITAP* bookHead,int freelist);
 void addBookToList(KITAP** booksHead,char* bookName,char* ISBN, int bookCount,int totalOperations,KITAPODUNC* history);
 void readBookBorrowFileToList(FILE* bookProcessFile,KITAPODUNC** bookBorrowList,int* totalBookOperations);
 void printBOOKS(KITAP* books);
@@ -103,23 +109,29 @@ char* removeBookFromList(int totalBookOperations,KITAPODUNC* bookBorrowList,KITA
 int proceedAddNewBookToLib(KITAP** booksHead,YAZAR** writerHead,KITAP newBOOK, int totalBookOperations, KITAPODUNC* bookBorrowList,int *totalBookWriter,KITAPYAZAR** bookWriter);
 void printSelfBook(KITAP *head);
 void printLateBooks(int totalBookOperations,KITAPODUNC* bookBorrowList);
-
-
+void printBooksWriters(KITAP* booksHead,YAZAR* writerHead, int totalBookWriter,KITAPYAZAR* bookWriterList, KITAP newBOOK);
+char* updateBookINFO(KITAP** booksHead,char* ISBN, char* bookName,int count);
+void addWriterForSpecificBook(YAZAR** head,char* writerName,char* writerSurname,char* ISBN,int *totalBookWriter,KITAPYAZAR** bookWriter);//*adds writer and writer-book relation
+char* removeWriterBookRelation(int *totalBookWriter,KITAPYAZAR** bookWriterList,int writerID,char* ISBN);
+char* addNewWriterBookNewRelation(YAZAR* writerHead,int *totalBookWriter,KITAPYAZAR** bookWriterList,char* ISBN,int writerID);
+ 
 void readBookWriterFileToList(FILE *file, KITAPYAZAR** bookWriter,int* totalWriter);
-void writeBookWriterFileFromList(FILE *file, KITAPYAZAR* bookWriter,int* totalBookWriter);
+void writeBookWriterFileFromList(FILE *file, KITAPYAZAR* bookWriter,int* totalBookWriter,int freeList);
 void printWriterBookList( KITAPYAZAR* bookWriter,int totalBookWriter);
-void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int totalBookWriter);
+void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int totalBookWriter,KITAP* bookHead);
 
 int main(){                                                                                                                            
     char* mainMenuInfo = "Choose one of them to proceed your work\n0-Student\n1-Book\n2-Writers\n3-Exit Main Menu";
-    char* bookMenuInfo = "Choose one of them to proceed your work\n0-add book\n1-remove book\n2-update book\n3-Book Info \n4-late books\n5-books on self\n6-match book with writers\n7-update Book Writer\n8-List Books\n9-listBookHistory\n10-exit Book Menu";
+    char* bookMenuInfo = "Choose one of them to proceed your work\n0-add book\n1-remove book\n2-update book\n3-Book Info \n4-late books\n5-books on self\n6-match book with writers\n7-update Book Writer\n8-List Books\n9-listBookHistory\n10-Book-Writer List \n11-exit Book Menu";
     char* stdMenuInfo = "Choose one of them to proceed your work\n0-add std\n1-remove std\n2-update std\n3-list std\n4-std Info\n5-Unsubmitted Stds\n6-banned std\n7-submit book\n8-barrow book\n9-exit std";
-    char* writerMenuInfo = "Choose one of them to proceed your work\n0-add writer\n1-remove writer\n2-list writers\n3-update\n4-writer Info\n5-exit Writer menu";
+    char* writerMenuInfo = "Choose one of them to proceed your work\n0-add writer\n1-remove writer\n2-list writers\n3-update writer\n4-writer Info\n5-exit Writer menu";
 
     MAINMENU mainmenuOpt;
     WRITERMENU writerOpt;
     BOOKMENU bookMenu;
     STUDENTMENU stdMenu;
+
+    int selectedMenu = 0;
 
     KITAP bookOBJ;
     OGRENCI stdOBJ;
@@ -176,7 +188,8 @@ int main(){
         printDiv();
         print(mainMenuInfo);
         printf("selection:");
-        scanf("%d",&mainmenuOpt);
+        scanf("%d",&selectedMenu);
+        mainmenuOpt = setMainMenuOptions(selectedMenu);
         printDiv();
 
         switch(mainmenuOpt){
@@ -185,7 +198,8 @@ int main(){
                     printDiv();
                     print(stdMenuInfo);
                     printf("selection:");
-                    scanf("%d",&stdMenu);
+                    scanf("%d",&selectedMenu);
+                    stdMenu = setStudentMenuOptions(selectedMenu);
                     printDiv();
                     OGRENCI newStd;
                     switch(stdMenu){
@@ -212,7 +226,9 @@ int main(){
                             scanf("%s",newStd.ad);
                             printf("surname(new):");
                             scanf("%s",newStd.soyad);
-                            print(updateStdFromList(&stdHead,newStd.ogrID,newStd.ad,newStd.soyad));
+                            printf("new library score:");
+                            scanf("%d",&(newStd.puan));
+                            print(updateStdFromList(&stdHead,newStd.ogrID,newStd.ad,newStd.soyad,newStd.puan));
                             break;
                         case listStd:
                             printStdList(stdHead);
@@ -233,10 +249,6 @@ int main(){
                             //TODO ogr puanı negatifse direk yazdıralım teslim etmedigi kitaplardan dolayı eksiye dusecekse de yazalım
                             break;
                         case submitBook:
-                            //* id alalım 
-                            //* kitaplar uzerinde dolanarak adamın alıp teslim etmedigi labeli id kontrolu ile yazdıralım
-                            //* teslim etmek isdedigi kitabın labelini yazsın 
-                            //* sonra o labele ait kitaplar ve odunc listesinde guncellemelerimizi yapalım
                             printf("std ID:");
                             scanf("%s",stdOBJ.ogrID);
                             proceedBookSubmitting(&stdHead,&booksHead,stdOBJ.ogrID,totalBookOperations,&bookBorrowList);
@@ -246,8 +258,8 @@ int main(){
                             printf("BOOK ISBN:");
                             scanf("%s",bookOBJ.ISBN);
                             int bookDetail = checkBookState(&booksHead,bookOBJ.ISBN);
-                            // -1 - yok
-                            //  0 - var ama musait degil 
+                            //  -1 - yok
+                            //  0 - var ama musait degil
                             //  1 var ve musait
                             if(bookDetail == -1){
                                 printf("%s does not belog to any book\n",bookOBJ.ISBN);
@@ -258,7 +270,7 @@ int main(){
                                 if(stdDetail == 0){
                                     printf("%s does not belong to any student\n",stdOBJ.ogrID);
                                 }else if(stdDetail == 1){
-                                    print("Given std Id enamble to barrow book"); 
+                                    print("Given std Id enabled to barrow book"); 
                                     proceedBookBorrowing(&booksHead,bookOBJ.ISBN,&totalBookOperations,&bookBorrowList,stdOBJ.ogrID);
                                 }
                             }
@@ -272,17 +284,24 @@ int main(){
                     }
                }while(stdMenu != exitStd);
 
+                    writerBookFile = fopen("KitapYazar.csv","w");
+                    if(writerBookFile == NULL) exit(-1);
+                    printWriterBookList(bookWriterList,totalBookWriter);
+                    print("file just writing****");
+                    writeBookWriterFileFromList(writerBookFile,bookWriterList,&totalBookWriter,0);
+                    fclose(writerBookFile);
+
                     bookBorrowFile = fopen("KitapOdunc.csv","w");
                     if(bookBorrowFile == NULL) exit(-1);
                     print("book history file writing");
-                    writeBookBorrowFileFromList(bookBorrowFile,bookBorrowList,&totalBookOperations); 
+                    writeBookBorrowFileFromList(bookBorrowFile,bookBorrowList,&totalBookOperations,0); 
                     fclose(bookBorrowFile);
 
                     print("std file writing");
                     stdFile = fopen("Ogrenciler.csv","w");
                     if(stdFile == NULL) exit(-1);
                     print("std file writing");
-                    writeStdFileFromList(stdFile,stdHead);
+                    writeStdFileFromList(stdFile,stdHead,0);
                     fclose(stdFile);
 
             break;
@@ -293,9 +312,11 @@ int main(){
                     printDiv();
                     print(bookMenuInfo);
                     printf("selection:");
-                    scanf("%d",&bookMenu);
+                    scanf("%d",&selectedMenu);
+                    bookMenu = setBookMenuOptions(selectedMenu);
                     printDiv();
                     int i = 0;
+                    int isNewWriterUpdate = 1;
                     int Result; 
                     KITAP newBOOK;
                     YAZAR newWriter;
@@ -321,8 +342,13 @@ int main(){
                             print(removeBookFromList(totalBookOperations,bookBorrowList,&booksHead,newBOOK.ISBN,&totalBookWriter,&bookWriterList));
                             break;
                         case updateBook:
-                            //* we could add new books or delete some books child also
-                            //* change booklist and books name, book count thats it
+                            printf("enter book ISBN(for detection):");
+                            scanf("%s",newBOOK.ISBN);
+                            printf("book name:");
+                            scanf(" %[^\n]s",newBOOK.kitapAdi);
+                            printf("book count: ");
+                            scanf("%d",&newBOOK.adet);
+                            print(updateBookINFO(&booksHead,newBOOK.ISBN,newBOOK.kitapAdi,newBOOK.adet));
                             break;
                         case listBookHistory:
                             for(i=0 ;i<totalBookOperations;i++){
@@ -334,9 +360,9 @@ int main(){
                             break;
                         case BookInfo:
                             printf("enter book Name:");
-                            //gets(newBOOK.kitapAdi);
                             scanf(" %[^\n]s",newBOOK.kitapAdi);
                             printBookNameNode(newBOOK.kitapAdi,booksHead);
+                            printBooksWriters( booksHead, writerHead,totalBookWriter,bookWriterList,newBOOK);
                             break;
                         case lateBooks:
                             printLateBooks(totalBookOperations,bookBorrowList);
@@ -345,39 +371,96 @@ int main(){
                             printSelfBook(booksHead); 
                             break;
                         case matchBWrt:
-                                //* listeler guncel bir halde sadece dosyaları acarak bastan yazmamız yeterli olacaktır
+                                //TODO match books with existing writer and test the both match and update writer book functions then write the report
+                                //* book isbn numarasını alalım o isbn deki writerları yazdıralım 
+                                //* sonrasına tun writerları yazdıralım we sadece writer id'si isteyelim ve kullanıcınin girdigi writer ile 
+                                //* kitabı guncelleyelim 
+                                //* eger var olan bir eslesme girmisse bunu kabul etmeyelim
+                                do{
+                                    print("You are going to match existing writers with books or delete book-writers relation from the list");
+                                    printf("Enter book ISBN(for detection):");
+                                    scanf("%s",newBOOK.ISBN);
+                                    printf("1-ADD Writer Relation, 2-Delete Writer Relation(writer will stay there): ");
+                                    scanf("%d",&i);
+                                    printBooksWriters(booksHead,writerHead,totalBookWriter,bookWriterList,newBOOK);
+                                    print("");
+                                    printWriters(writerHead);
+                                    print("");
+                                    switch(i){
+                                        case 1:
+                                            printf("enter writer Id that printed out to screen just above: ");
+                                            scanf("%d",&newWriter.yazarID);
+                                            print(addNewWriterBookNewRelation(writerHead,&totalBookWriter,&bookWriterList,newBOOK.ISBN,newWriter.yazarID));                  
+                                        break;
+                                        case 2:
+                                            printf("writer ID: ");
+                                            scanf("%d",&newWriter.yazarID);
+                                            print(removeWriterBookRelation(&totalBookWriter,&bookWriterList,newWriter.yazarID,newBOOK.ISBN));
+                                        break;
+                                        default:
+                                            print("invalid selection please select valid one");
+                                            
+                                        break;
+                                    }
+                                printf("new match about writer-book? (1:continue,-1:exit): ");
+                                scanf("%d",&isNewWriterUpdate);
+                           }while(isNewWriterUpdate == 1);
+
                             break;
                         case updataBWrt:
-                            //* listeler guncel bir halde sadece dosyayı acarek bastan yazmamız yeterli olacaktır
-                            break;
+                           do{
+                                print("You are going to add new writers or delete book writers relation for the books:");
+                                printf("Enter book ISBN(for detection):");
+                                scanf("%s",newBOOK.ISBN);
+                                printBooksWriters(booksHead,writerHead,totalBookWriter,bookWriterList,newBOOK);
+                                printf("1-ADD NEW Writer and relation, 2-Delete Writer Relation(writer will stay there):");
+                                scanf("%d",&i);
+                                switch(i){
+                                    case 1:
+                                        printf("writer Name:");
+                                        scanf("%s",newWriter.yazarAd);
+                                        printf("writer surname:");
+                                        scanf("%s",newWriter.yazarSoyad);
+                                        addWriterForSpecificBook(&writerHead,newWriter.yazarAd,newWriter.yazarSoyad,newBOOK.ISBN,&totalBookWriter,&bookWriterList);
+                                    break;
+                                    case 2:
+                                        printf("writer ID:");
+                                        scanf("%d",&newWriter.yazarID);
+                                        print(removeWriterBookRelation(&totalBookWriter,&bookWriterList,newWriter.yazarID,newBOOK.ISBN));
+                                    break;
+                                    default: 
+                                        print("invalid selection please select valid one");
+                                    break;
+                                }
+                                printf("new update about writer-book? (1:continue,-1:exit)");
+                                scanf("%d",&isNewWriterUpdate);
+                           }while(isNewWriterUpdate == 1);
+                        break;
                         case exitBook:
                             print("Book menu exited");
                             break;
+                        case writerBook:
+                            printWriterBookList(bookWriterList,totalBookWriter);
+                        break;
                         default:
                              print("wrong selection please select options included above");
                             break;
                     }
                 }while(bookMenu != exitBook);
 
-                
                 bookFile = fopen("Kitaplar.csv","w");
                 if(bookFile == NULL) exit(-1);
-                writeBookFileFromBookList(bookFile,booksHead);
+                writeBookFileFromBookList(bookFile,booksHead,0);
                 fclose(bookFile);
-
 
             break;    
             case writers:
-
-                //* dosyadan okuyup yazarları bir linked list icerisine ekleyelim
-                //* devamında linked list icerisinde istenildigi kadar islem yapıp break yaparken de dosyayı guncel linkli liste ile 
-                //* guncelleyebiliriz 
-
                 do{
                     printDiv();
                     print(writerMenuInfo);
                     printf("selection:");
-                    scanf("%d",&writerOpt);
+                    scanf("%d",&selectedMenu);
+                    writerOpt = setWriterMenuOptions(selectedMenu);
                     printDiv();
 
                     switch(writerOpt){
@@ -387,13 +470,12 @@ int main(){
                             printf("writer surname:");
                             scanf("%s",newWriter.yazarSoyad);
                             print(addWriterToList(&writerHead,newWriter.yazarAd,newWriter.yazarSoyad));
-                            
                             break;
                         case removeWriter:
                             print("writer ID to be deleted");
                             printf("id:");
                             scanf("%d",&newWriter.yazarID);
-                            print(removeWriterFromList(&writerHead, newWriter.yazarID));
+                            print(removeWriterFromList(&writerHead, newWriter.yazarID,bookWriterList,totalBookWriter));
                             //TODO we have to update book writer array as -1 for deleted wrtier
                             break;
                         case listWriters:
@@ -416,7 +498,7 @@ int main(){
                             //TODO update writer info funct interms of the instructions which are above
                             printf("writer name:");
                             scanf("%s",newWriter.yazarAd);
-                            printWriterInfo(writerHead,newWriter.yazarAd,bookWriterList,totalBookWriter);
+                            printWriterInfo(writerHead,newWriter.yazarAd,bookWriterList,totalBookWriter,booksHead);
                             break;
                         case exitWriters:
                             print("writers exitted");
@@ -426,10 +508,11 @@ int main(){
                         break;  
                     }
                 }while(writerOpt != exitWriters);
+                
                 //* writer all of the structs to writer files and close the file end of writer operations 
                 writerFile = fopen("YAZARLAR.csv","w");
                 if(writerFile == NULL) exit(-1);
-                writeWriterListToWriterFile(writerFile,writerHead);
+                writeWriterListToWriterFile(writerFile,writerHead,0);
                 fclose(writerFile);
             
             break;
@@ -442,6 +525,150 @@ int main(){
         }
         
     } while(mainmenuOpt != exitMainMenu);
+}
+
+char* addNewWriterBookNewRelation(YAZAR* writersHead,int *totalBookWriter,KITAPYAZAR** bookWriterList,char* ISBN,int yazarID){
+    int size = log2(*totalBookWriter)+1;
+    size = pow(2,size);
+    int i = 0;
+    YAZAR* tmp = writersHead;
+    int found = 0;
+   
+
+    for(i=0;i<(*totalBookWriter);i++){
+        if(((*bookWriterList)[i]).YazarID == yazarID && strcmp(((*bookWriterList)[i]).ISBN,ISBN) == 0){
+            printWriterBookList(*bookWriterList,*totalBookWriter);
+            return "the relation you are currently trying to add is already exist";
+        }
+    }
+
+    if(size == (*totalBookWriter)){
+        (*bookWriterList) = (KITAPYAZAR*) realloc(bookWriterList,sizeof(KITAPYAZAR)*2*size);
+        size = size*2;
+    }
+
+    while(tmp != NULL && found == 0){
+        if(tmp->yazarID == yazarID){
+            found = 1;
+            ((*bookWriterList)[*totalBookWriter]).YazarID = yazarID ;
+            strcpy(((*bookWriterList)[*totalBookWriter]).ISBN,ISBN);
+            (*totalBookWriter) = (*totalBookWriter) + 1;
+        }
+        tmp = tmp->next;
+    }
+
+    return found == 1 ? "new relation has been added" : "given Id does not belongs to any writers in writers list";
+}
+
+char* removeWriterBookRelation( int *totalBookWriter,KITAPYAZAR** bookWriterList,int writerID,char* ISBN){
+    int size = log2(*totalBookWriter)+1;
+    size = pow(2,size);
+    int i = 0;
+    int found = 0;
+    for(i=0;i<(*totalBookWriter);i++){
+        if(((*bookWriterList)[i]).YazarID == writerID && strcmp(((*bookWriterList)[i]).ISBN,ISBN) == 0 && found == 0){
+            found = 1;
+            ((*bookWriterList)[i]).YazarID =  ((*bookWriterList)[*totalBookWriter]).YazarID;
+            strcpy(((*bookWriterList)[i]).ISBN,((*bookWriterList)[*totalBookWriter]).ISBN);
+            (*totalBookWriter) = (*totalBookWriter)-1;
+           return "book relation has been updated";
+        }
+    }
+    return "writer id does not found to be removed";
+}
+
+
+void addWriterForSpecificBook(YAZAR** head,char* writerName,char* writerSurname,char* ISBN,int *totalBookWriter,KITAPYAZAR** bookWriter){
+    //* this function not only adds an writer but also adds the writer and his id to the writerBookList
+    YAZAR* tmp = *head;
+    int size = log2(*totalBookWriter)+1;
+    size = pow(2,size);
+    if(size == *totalBookWriter){
+        (*bookWriter) = (KITAPYAZAR*) realloc(*bookWriter,sizeof(KITAPYAZAR)*size*2);
+        size = size*2;
+    }
+    addWriterToList(head,writerName,writerSurname);
+    while(tmp->next != NULL){
+        tmp = tmp->next;
+    }
+    strcpy(((*bookWriter)[(*totalBookWriter)]).ISBN,ISBN);
+    ((*bookWriter)[(*totalBookWriter)]).YazarID = tmp->yazarID;
+    (*totalBookWriter) = (*totalBookWriter)+1;
+}
+
+char* updateBookINFO(KITAP** booksHead,char* ISBN, char* bookName , int count){
+    KITAP* parent = *booksHead;
+    KITAPORNEK* child;
+    KITAPORNEK* child2;
+    KITAPORNEK* child3;
+    int newCount = count;
+    int i=0, j=1;
+    int dummyI = 0, mod = 0;
+    int found = 0;
+    while(parent != NULL && found == 0){
+        child = parent->head;
+        if(strcmp(parent->ISBN,ISBN) == 0){
+            found = 1;
+            strcpy(parent->kitapAdi,bookName);
+            while(child != NULL){
+                if(strcmp(child->Durum,"RAFTA") != 0){
+                    if(i >= newCount){
+                        return "upper copy of book has been borrowed so you cant decrease the copy count until they submitted. But name has been updated";
+                    }
+                }
+                i++;
+                child = child->next;
+            }
+
+            child = parent->head;
+            while(child->next != NULL){
+                child = child->next;
+            }
+
+            if(newCount > i ){
+                //* kitap ekleme yapacagiz
+                while(i!=newCount){
+                    i++;
+                    child2 = (KITAPORNEK*) malloc(sizeof(KITAPORNEK)*1);
+                    strcpy(child2->Durum,"RAFTA");
+                    strcpy(child2->EtiketNo,ISBN);
+                    (child2->EtiketNo)[13] = '_';
+
+                    dummyI = i;
+                    j = 1;
+                    while(dummyI > 0 ){
+                        mod = dummyI%10;
+                        dummyI = dummyI/10;
+                        (child2->EtiketNo)[13+j] = ('0' + mod);
+                        j++;
+                    }
+                    child->next = child2;
+                    child = child2;
+                }
+            }
+
+            if(i > newCount){
+                print("kitap sayisi azaltilacak");
+                child2 = parent->head;
+                j = newCount;
+                while(j != 0){
+                    child2 = child2->next;
+                    j--;
+                }
+                while(child2 != NULL){
+                    child3 = child2;
+                    child2 = child2->next;
+                    child3->next = NULL;
+                    free(child3);
+                }
+            }
+            //* child istenilen sayıya dusurulmeli veya da arrtırılmalı
+            //* var olan kitap sayısı i icerisinde oyleyse i> newcount kitap ekle i< newcount ise kitap silmek gerekecek
+            parent->adet = newCount;
+        }
+        parent = parent->next;
+    }
+    return found == 0 ? "book does not found to be updated" : "book successfully updated";
 }
 
 void printLateBooks(int totalBookOperations,KITAPODUNC* bookBorrowList){
@@ -481,6 +708,43 @@ void printSelfBook(KITAP *head){
             }
             tmp2 = tmp2->next;
         print("");
+        }
+        tmp = tmp->next;
+    }
+}
+
+void printBooksWriters(KITAP* booksHead,YAZAR* writerHead, int totalBookWriter,KITAPYAZAR* bookWriterList, KITAP newBOOK){
+    KITAP* tmp = booksHead;
+    YAZAR *tmp2 = writerHead;
+    int found = 0;
+    int i = 0;
+
+    while(tmp != NULL && found == 0){
+        if(strcmp(tmp->ISBN,newBOOK.ISBN) == 0){
+            found = 1;
+            strcpy(newBOOK.kitapAdi,tmp->kitapAdi);
+        }
+        tmp = tmp->next;
+    }
+    tmp = booksHead;
+    found = 0;
+
+    print("KITABIN YAZARLARI");
+    while(tmp != NULL && found == 0){
+        if(strcmp(tmp->kitapAdi,newBOOK.kitapAdi) == 0 ){
+            found = 1;
+            for(i=0;i<totalBookWriter;i++){
+                if(strcmp(bookWriterList[i].ISBN,tmp->ISBN) == 0){
+                    tmp2 = writerHead;
+                    while(tmp2 != NULL){
+                        if(tmp2->yazarID == bookWriterList[i].YazarID){
+                            printWriterNode(tmp2->yazarID,tmp2->yazarAd,tmp2->yazarSoyad);
+                        }
+                        tmp2 = tmp2->next;
+                    }
+                }
+            }        
+
         }
         tmp = tmp->next;
     }
@@ -563,6 +827,8 @@ char* removeBookFromList(int totalBookOperations,KITAPODUNC* bookBorrowList,KITA
     int j = 0;
     int found = 0;
     char label[14];
+    int dummyTotalBookWriter = *totalBookWriter;
+
     for(i=0;i<totalBookOperations;i++){
         for(j=0;j<13;j++){
             label[j] = bookBorrowList[i].EtiketNo[j];
@@ -572,17 +838,21 @@ char* removeBookFromList(int totalBookOperations,KITAPODUNC* bookBorrowList,KITA
                 //* silinmek istenen kitabı bulduk ve bu kitabın tum kopyaları henuz teslim edilmemis 
                 return "deletion operations failed because at least one copy of this book not submitted right now ";
             }
+        } 
+    }
+
+    for(i=0;i<(*totalBookWriter);i++){
+        if(strcmp(((*bookWriter)[i]).ISBN,ISBN) == 0){
+            ((*bookWriter)[i]) = ((*bookWriter)[dummyTotalBookWriter]);
+            dummyTotalBookWriter--;
         }
     }
 
-    for(i=0;i<*totalBookWriter;i++){
+    (*totalBookWriter) = dummyTotalBookWriter;
 
-        if(strcmp((*bookWriter)[i].ISBN,ISBN) == 0){
-            strcpy((*bookWriter)[i].ISBN,(*bookWriter)[*totalBookWriter].ISBN);
-            (*bookWriter)[i].YazarID = (*bookWriter)[*totalBookWriter].YazarID;
-            (*totalBookWriter) = (*totalBookWriter)-1;
-        }
-    }
+    // *totalBookWriter = dummyTotalBookWriter;
+
+    print("going to delete the book from book list right now ");
 
     while(tmp != NULL && found == 0){
         if(strcmp(tmp->ISBN,ISBN) == 0){
@@ -601,39 +871,44 @@ char* removeBookFromList(int totalBookOperations,KITAPODUNC* bookBorrowList,KITA
             tmp = tmp->next;
         }
     }
+    printWriterBookList(*bookWriter,*totalBookWriter);
+    printBOOKS(*booksHead);
+
     return found == 1 ? "desired book deleted" : "book does not found to be deleted";
 }
 
-void writeStdFileFromList(FILE* stdFile,OGRENCI *stdHead){
+void writeStdFileFromList(FILE* stdFile,OGRENCI *stdHead,int isFree){
     OGRENCI *tmp = stdHead;
     OGRENCI *tmp2 ;
     while(tmp != NULL){
         fprintf(stdFile,"%s,%s,%s,%d\n",tmp->ogrID,tmp->ad,tmp->soyad,tmp->puan);
         tmp2 = tmp;
         tmp = tmp->next;
-        free(tmp2);
-        tmp2->prev = NULL;
-        tmp2->next = NULL;
+        if(isFree){
+            free(tmp2);
+            tmp2->prev = NULL;
+            tmp2->next = NULL;
+        }
+        
     }
 }
 
-
-void writeBookBorrowFileFromList(FILE* bookBorrowFile,KITAPODUNC* bookBorrowList,int* totalBookOperations){
+void writeBookBorrowFileFromList(FILE* bookBorrowFile,KITAPODUNC* bookBorrowList,int* totalBookOperations,int freeList){
     printf("%d \n",*totalBookOperations);
     int i = 0;
-    KITAPODUNC crnt;
+    KITAPODUNC *crnt;
     TARIH* date;
-    for(i = 0;i<*totalBookOperations;i++){
-        crnt = bookBorrowList[i];
+    for(i = 0;i<(*totalBookOperations);i++){
+        crnt = (bookBorrowList+i);
         date = &(bookBorrowList[i].islemTarihi);
-        fprintf(bookBorrowFile,"%s,%s,%d,%d.%d.%d\n",crnt.EtiketNo,crnt.ogrID,crnt.islemTipi,date->gun,date->ay,date->yil);
-        free(bookBorrowList+i);
+        fprintf(bookBorrowFile,"%s,%s,%d,%d.%d.%d\n",crnt->EtiketNo,crnt->ogrID,crnt->islemTipi,date->gun,date->ay,date->yil);
     }
-    *totalBookOperations = 0;
-    free(totalBookOperations);
+     if(freeList == 1){
+        free(bookBorrowList);
+     }
 }
 
-void writeBookFileFromBookList(FILE *file, KITAP* bookHead){
+void writeBookFileFromBookList(FILE *file, KITAP* bookHead,int freeList){
     KITAP *parent = bookHead;
     KITAP *parentTmp = bookHead;
     KITAPORNEK *child;
@@ -645,29 +920,32 @@ void writeBookFileFromBookList(FILE *file, KITAP* bookHead){
             print("there was an error while writing the book file");
             return;
         }
-        child = parent->head;
-        while(child != NULL){
-            childTmp = child;
-            child = child->next;
-            free(childTmp);
-            childTmp->next = NULL;
+        if(freeList == 1){
+            child = parent->head;
+            while(child != NULL){
+                childTmp = child;
+                child = child->next;
+                free(childTmp);
+                childTmp->next = NULL;
+            }
         }
         parent = parent->next;
     }
 
     print("child file writing done");
     //* simdi childleri null yaptıktan sonra parentleri de null yaparak cikmamiz gerekiyor
+    if(freeList == 1){
     parent = bookHead;
-    while(parent != NULL){
-        parentTmp = parent;
-        parent = parent->next;
-        free(parentTmp);
-        parentTmp->next = NULL;
+        while(parent != NULL){
+            parentTmp = parent;
+            parent = parent->next;
+            free(parentTmp);
+            parentTmp->next = NULL;
+        }
     }
 }
 
 void proceedBookSubmitting(OGRENCI** std ,KITAP **booksHead,char* stdID, int totalBookOperations,KITAPODUNC** bookBorrowList){
-
     OGRENCI* stdHead = *std;
     KITAP *parent = *booksHead;
     KITAPORNEK *child;
@@ -734,7 +1012,6 @@ void proceedBookSubmitting(OGRENCI** std ,KITAP **booksHead,char* stdID, int tot
                     }
                     parent = parent->next;
                 }
-
             }
         }
     }
@@ -829,9 +1106,7 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
         }
         parent2 = parent2->next;
     }
-
 }
-
 
 
 int checkBookState(KITAP** booksHead,char * ISBN){
@@ -858,7 +1133,6 @@ int checkBookState(KITAP** booksHead,char * ISBN){
         }
         parent = parent->next;
     }
-
     return isExist;
 }
 
@@ -876,7 +1150,6 @@ void printBannedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
     }
 
 }
-
 
 void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
     int i = 0;
@@ -1073,7 +1346,6 @@ void addBookToChildList(KITAPORNEK** head,char* label,char* state){
     }
 }
 
-
 void printStdInfo(OGRENCI* stdHead,char* stdName,KITAP* booksHead,int totalOpr, KITAPODUNC* history){
     OGRENCI *tmp = stdHead;
     KITAP *tmp2 = booksHead;
@@ -1114,13 +1386,14 @@ void printStdNode(OGRENCI* tmp){
 }
  
 
-char* updateStdFromList(OGRENCI **stdHead,char* stdId,char*  stdName,char* stdSurname){
+char* updateStdFromList(OGRENCI **stdHead,char* stdId,char*  stdName,char* stdSurname,int stdPoint){
     OGRENCI *tmp = *stdHead;
 
     while(tmp!=NULL){
         if(strcmp(tmp->ogrID,stdId) == 0){
             strcpy(tmp->ad,stdName);
             strcpy(tmp->soyad,stdSurname);
+            tmp->puan = stdPoint;
             //* Sadece name ve surname degistigi icin ve history ile book listesinde id tutuldugu icin oralarda bir degisim yapmamız gerekmiyor
             return "desired std with given Id updated successfully";
         }
@@ -1225,8 +1498,9 @@ char* addStdToList(OGRENCI** stdHead,char* number,char* name,char* surname,int p
     return "student has been added to double linked list succesfully";
 }
 
-void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int totalBookWriter){
+void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int totalBookWriter,KITAP* bookHead){
     YAZAR *tmp = head;
+    KITAP *tmp2 = bookHead;
     int found = 0;
     int writerExists = 0;
     int i = 0;
@@ -1238,6 +1512,12 @@ void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int tot
                 if(bookWriter[i].YazarID == tmp->yazarID){
                     found = 1;
                     printf("ISBN: %s, writerId: %d\n",bookWriter[i].ISBN ,bookWriter[i].YazarID );
+                    while(tmp2 != NULL){
+                        if(strcmp(tmp2->ISBN,bookWriter[i].ISBN) == 0){
+                            printBookNode(tmp2);
+                        }
+                        tmp2 = tmp2->next;
+                    }
                 }
             }
         }
@@ -1252,15 +1532,15 @@ void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int tot
     }
 }
 
-void writeBookWriterFileFromList(FILE *file, KITAPYAZAR* bookWriter,int* totalBookWriter){
+void writeBookWriterFileFromList(FILE *file, KITAPYAZAR* bookWriter,int* totalBookWriter,int freeList){
     int i = 0;
     for(i=0;i<*totalBookWriter;i++){
         fprintf(file,"%s,%d\n",bookWriter[i].ISBN,bookWriter[i].YazarID);
         if(ferror(file)) print("there was an error while writing writers to file");
-        free(bookWriter+i);
     }
-    *totalBookWriter = 0;
-    free(totalBookWriter);
+   if(freeList == 1){
+     free(bookWriter);
+   }
 }
 
 void printWriterBookList( KITAPYAZAR* bookWriter,int totalBookWriter){
@@ -1308,7 +1588,7 @@ void readBookWriterFileToList(FILE *file, KITAPYAZAR** bookWriter,int* totalWrit
 }
 
 
-void writeWriterListToWriterFile(FILE *file,YAZAR *head){
+void writeWriterListToWriterFile(FILE *file,YAZAR *head,int freeList){
     YAZAR *tmp = head;
     YAZAR *prev;
 
@@ -1317,7 +1597,10 @@ void writeWriterListToWriterFile(FILE *file,YAZAR *head){
         if(ferror(file)) print("there was an error while writing writers to file");
         prev = tmp;
         tmp = tmp->next;
-        free(prev);
+        if(freeList == 1){
+            free(prev);
+        }
+           
     }while(tmp != NULL);
 }
 
@@ -1336,10 +1619,11 @@ char* updateWriterFromList(YAZAR** head,int writerID,char* writerName,char* writ
     return updated == 1 ? "desired writer updated" : "writer does not found to be updated";
 }
 
-char* removeWriterFromList(YAZAR **head, int id){
+char* removeWriterFromList(YAZAR **head, int id,KITAPYAZAR* bookWriter,int totalBookWriter){
     int found = 0;
     YAZAR *tmp = *head;
     YAZAR *prev=NULL;
+    int i = 0;
     while(tmp != NULL && found == 0){
         if(tmp->yazarID == id){
             found = 1;
@@ -1357,8 +1641,15 @@ char* removeWriterFromList(YAZAR **head, int id){
         if(tmp!=NULL){
             prev = tmp;
             tmp = tmp->next;
-            }
+        }
     }
+    for(i=0;i<totalBookWriter;i++){
+        if(((bookWriter)[i]).YazarID == id){
+            //* silinen yazarin id'si hala burada var dolayısıyla ilgili id'yi -1 yapalım
+            ((bookWriter)[i]).YazarID = -1;
+        }
+    }
+    printWriterBookList(bookWriter,totalBookWriter);
     return found == 1 ? "desired writer deleted" : "writer does not found to be deleted";
 }
 
@@ -1432,5 +1723,107 @@ void print(char *msg){
 }
 
 void printDiv(){
-    print("-----------------------------------------------------------");
+    print("----------------------------------------------------------------");
+}
+
+MAINMENU setMainMenuOptions(int selected){
+    MAINMENU selectedEnum;
+    switch(selected){
+        case 0: selectedEnum = student;
+        break;
+        case 1: selectedEnum = book;
+        break;
+        case 2: selectedEnum = writers;
+        break;
+        case 3: selectedEnum = exitMainMenu;
+        break;
+        default:
+        print("please select appropriate options");
+    }
+    return selectedEnum;
+}
+
+WRITERMENU setWriterMenuOptions(int selected){
+    //* addWriter,removeWriter,listWriters,updateWriter,writerInfo,exitWriters;
+    WRITERMENU selectedEnum;
+    switch(selected){
+        case 0: selectedEnum = addWriter;
+        break;
+        case 1: selectedEnum = removeWriter;
+        break;
+        case 2: selectedEnum = listWriters;
+        break;
+        case 3: selectedEnum =updateWriter;
+        break;
+        case 4: selectedEnum = writerInfo;
+        break;
+        case 5: selectedEnum = exitWriters;
+        break;
+        default:
+        print("please select appripriate options");
+    }
+    return selectedEnum;
+}
+
+STUDENTMENU setStudentMenuOptions(int selected){
+    //* addStd,removeStd,updateStd,listStd,stdInfo,unSubmittedStd,bannedStd,submitBook,barrowBook,exitStd;
+    STUDENTMENU selectedEnum;
+    switch(selected){
+        case 0:selectedEnum =addStd;
+        break;
+        case 1: selectedEnum = removeStd;
+        break;
+        case 2: selectedEnum = updateStd;
+        break;
+        case 3: selectedEnum = listStd;
+        break;
+        case 4: selectedEnum = stdInfo;
+        break;
+        case 5: selectedEnum = unSubmittedStd;
+        break;
+        case 6: selectedEnum = bannedStd;
+        break;
+        case 7: selectedEnum = submitBook;
+        break;
+        case 8: selectedEnum = barrowBook;
+        break;
+        case 9: selectedEnum = exitStd;
+        default:
+        print("please select appripriate options");
+    }
+    return selectedEnum;
+}
+
+BOOKMENU setBookMenuOptions(int selected){
+    //* addBook,removeBook,updateBook,BookInfo,lateBooks,shelfBook,matchBWrt,updataBWrt,listBooks,listBookHistory,exitBook;
+    BOOKMENU selectedEnum;
+    switch(selected){
+        case 0: selectedEnum = addBook;
+        break;
+        case 1:selectedEnum = removeBook;
+        break;
+        case 2: selectedEnum = updateBook;
+        break;
+        case 3: selectedEnum = BookInfo;
+        break;
+        case 4: selectedEnum = lateBooks;
+        break;
+        case 5: selectedEnum = shelfBook;
+        break;
+        case 6: selectedEnum = matchBWrt;
+        break;
+        case 7:selectedEnum = updataBWrt;
+        break;
+        case 8: selectedEnum = listBooks;
+        break;
+        case 9: selectedEnum = listBookHistory;
+        break;
+        case 10: selectedEnum = writerBook;
+        break;
+        case 11: selectedEnum = exitBook;
+        break;
+        default:
+        print("please select appripriate options");
+    }
+    return selectedEnum;
 }
