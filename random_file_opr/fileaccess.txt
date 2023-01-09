@@ -1,0 +1,60 @@
+
+In all cases c performs I/O operations through strams. A streams consist
+from ordered series of bytes. 
+
+There are three default streams that are autometically opened for every 
+program STDIN, STDOUT and STDERR 
+
+*** data could be accessed by two format text and binary. To open an file 
+in binary we just add b to the file opening mode such as rb, wb ...
+
+One of the fields in each FILE structure is a file position indicator 
+that points to the where the next character will be read from or 
+wrtitten to. As you read or write data to the file the indicator also 
+move.
+
+File pointer does not mean file pointer indicator.
+Before you read a file you should open the file with fopen(). Moreover 
+you should declare the mode while the file opening interms of your job.
+
+fprintf() -> writes to the file 
+fscanf() -> gets data from the file 
+
+one char at a time -> getc() and putc()
+one line -> fgets() and fputs()
+one bloc at once -> fread() and fwrite() *** *** ***  <==
+ fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+ fwrite(void *ptr, size_t size, size_t nmemb, FILE *stream);
+ 1 defada 54 byte isle veya 54 defa her seferinde 1 byte isle diyebiliriz
+ 
+
+*** one rule valid for everywhere 
+    fseek() rewind() or fflush() ile bufferi temizlememiz gerekir 
+
+*** <==> RANDOM ACCESS <==> ***
+- In random access we need two more func fseek() and ftell()
+
+FSEEK()
+- fseek moves file position indicator to a specified character in stream 
+- int fseek( FILE *stream, long int offset, int whence);
+- SEEK_SET the beginning of the file - rewind()
+- SEEK_CUR the current position of the file position indicator 
+- SEEK_END the end of file position
+
+
+FTELL() 
+- ftell just takes one arguments and returns the file position indicator
+  position
+
+--> Fseek ve ftell ile dosyanın icerisindeki file position indicatoru 
+    ayarlayarak istedigimiz islemleri yapabiliyoruz
+
+
+--- SPLITTING a PROGRAM & MAKEFILE ---
+
+
+
+
+
+
+

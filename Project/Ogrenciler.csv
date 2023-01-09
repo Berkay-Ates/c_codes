@@ -1,11 +1,12 @@
 18011001,Geoffrey,Hinton,100
-18011005,Yoshua,Bengio,100
-18011010,Robert,Tibshirani,100
+18011005,Yoshua,Bengio,-100
 18011015,Kaiming,He,100
 18011020,Ilya,Sutskever,100
+18011010,Teslim,Etmemiş,100
 17011001,Andrew,Zisserman,100
 17011005,Francisco,Matorras,100
 17011010,Ross,Girshick,100
-17011015,Trevor,Hastie,100
-17011020,Yann,LeCun,100
-21011609,Berkay,ATES,190
+17011015,Trevor,Hastie,-100
+17011020,Teslim2,Etmemis2,100
+21011609,Berkay,ATES,20
+22222222,HELLO,WORLD,100

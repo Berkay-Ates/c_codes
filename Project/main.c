@@ -65,9 +65,11 @@ WRITERMENU setWriterMenuOptions(int selected);
 STUDENTMENU setStudentMenuOptions(int selected);
 BOOKMENU setBookMenuOptions(int selected);
 
-//* writer func macros 
+
 void print(char *msg);
 void printDiv();
+
+//* writer func macros 
 char* addWriterToList(YAZAR** head,char* writerName,char* writerSurname);
 void readWriterFile(FILE* file,YAZAR **head );
 void printWriters(YAZAR *head);
@@ -81,14 +83,13 @@ void readStdFromFile(FILE* stdFile,OGRENCI** stdHead);
 void writeStdFileFromList(FILE* stdFile,OGRENCI *stdHead, int freeList);
 char* addStdToList(OGRENCI** stdHead,char* number,char* name,char* surname,int point);
 void printStdList(OGRENCI* head);
-char* removeStdFromList(OGRENCI **stdHead,char* name);
+char* removeStdFromList(OGRENCI **stdHead,char* name,int totalBookOperations,KITAPODUNC* bookBorrowList);
 char* updateStdFromList(OGRENCI **stdHead,char* stdId,char* stdName,char* stdSurname,int stdScore);
 void printStdInfo(OGRENCI* stdHead,char* stdName,KITAP * booksHead,int totalBookOpr, KITAPODUNC* bookHistory);
 void printStdNode(OGRENCI* tmp);
 void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std);
 void printBannedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std);
 int chekStdDetail(OGRENCI* stdHead,char* stdID);
-
 
 //* book funcs macros 
 void readBooksFileToList(FILE* bookFile,KITAP** booksHead,int totalOperations,KITAPODUNC* bookOperationHistory);
@@ -115,16 +116,24 @@ void addWriterForSpecificBook(YAZAR** head,char* writerName,char* writerSurname,
 char* removeWriterBookRelation(int *totalBookWriter,KITAPYAZAR** bookWriterList,int writerID,char* ISBN);
 char* addNewWriterBookNewRelation(YAZAR* writerHead,int *totalBookWriter,KITAPYAZAR** bookWriterList,char* ISBN,int writerID);
  
+//* kitapYazar funcs
 void readBookWriterFileToList(FILE *file, KITAPYAZAR** bookWriter,int* totalWriter);
 void writeBookWriterFileFromList(FILE *file, KITAPYAZAR* bookWriter,int* totalBookWriter,int freeList);
 void printWriterBookList( KITAPYAZAR* bookWriter,int totalBookWriter);
 void printWriterInfo(YAZAR *head,char* writerName,KITAPYAZAR *bookWriter,int totalBookWriter,KITAP* bookHead);
 
+//* file writing operations
+void writeBookFile(void (*write)(),KITAP* booksHead,int isFree);
+void writeBookBorrowFile(void (*write)(),KITAPODUNC* bookBorrowList,int* totalBookOperations,int isFree);
+void writeBookWriterFile(void (*write)(),KITAPYAZAR* bookWriter,int* totalBookWriter,int freeList);
+void writeStdFile(void (*write)(),OGRENCI* stdHead,int isFree);
+void writeWriterFile(void (*read)(),YAZAR* writerHead,int isFree);
+
 int main(){                                                                                                                            
     char* mainMenuInfo = "Choose one of them to proceed your work\n0-Student\n1-Book\n2-Writers\n3-Exit Main Menu";
-    char* bookMenuInfo = "Choose one of them to proceed your work\n0-add book\n1-remove book\n2-update book\n3-Book Info \n4-late books\n5-books on self\n6-match book with writers\n7-update Book Writer\n8-List Books\n9-listBookHistory\n10-Book-Writer List \n11-exit Book Menu";
-    char* stdMenuInfo = "Choose one of them to proceed your work\n0-add std\n1-remove std\n2-update std\n3-list std\n4-std Info\n5-Unsubmitted Stds\n6-banned std\n7-submit book\n8-barrow book\n9-exit std";
-    char* writerMenuInfo = "Choose one of them to proceed your work\n0-add writer\n1-remove writer\n2-list writers\n3-update writer\n4-writer Info\n5-exit Writer menu";
+    char* bookMenuInfo = "Choose one of them to proceed your work\n0-add book\n1-remove book\n2-update book\n3-book info\n4-late books\n5-books on self\n6-match book with writers\n7-update Book Writer\n8-list books\n9-list book history\n10-book-writer list \n11-exit book menu";
+    char* stdMenuInfo = "Choose one of them to proceed your work\n0-add std\n1-remove std\n2-update std\n3-list std\n4-std info\n5-unsubmitted stds\n6-banned std\n7-submit book\n8-barrow book\n9-exit std";
+    char* writerMenuInfo = "Choose one of them to proceed your work\n0-add writer\n1-remove writer\n2-list writers\n3-update writer\n4-writer info\n5-exit writer menu";
 
     MAINMENU mainmenuOpt;
     WRITERMENU writerOpt;
@@ -158,7 +167,6 @@ int main(){
     writerBookFile = fopen("KitapYazar.csv","r");
     if(writerBookFile == NULL) exit(-1);
     readBookWriterFileToList(writerBookFile,&bookWriterList,&totalBookWriter);
-    printWriterBookList(bookWriterList,totalBookWriter);
     fclose(writerBookFile);
 
     bookBorrowFile = fopen("KitapOdunc.csv","r");
@@ -174,7 +182,7 @@ int main(){
     writerHead = NULL;
     writerFile = fopen("Yazarlar.csv","r");
     if(writerFile == NULL) exit(-1);
-    readWriterFile(writerFile,&writerHead);
+    readWriterFile(writerFile,&writerHead); 
     fclose(writerFile);
 
     stdHead = NULL;
@@ -183,7 +191,6 @@ int main(){
     readStdFromFile(stdFile,&stdHead);
     fclose(stdFile);
 
-
     do{
         printDiv();
         print(mainMenuInfo);
@@ -191,7 +198,6 @@ int main(){
         scanf("%d",&selectedMenu);
         mainmenuOpt = setMainMenuOptions(selectedMenu);
         printDiv();
-
         switch(mainmenuOpt){
             case student:
                do{
@@ -215,7 +221,7 @@ int main(){
                         case removeStd:
                             printf("std Name(deletion):");
                             scanf("%s",newStd.ad);
-                            print(removeStdFromList(&stdHead,newStd.ad));
+                            print(removeStdFromList(&stdHead,newStd.ad,totalBookOperations,bookBorrowList));
                             //TODO teslim edilmemis kitaplar varsa sildirtmemeliyiz 
                             break;
                         case updateStd:
@@ -284,26 +290,28 @@ int main(){
                     }
                }while(stdMenu != exitStd);
 
-                    writerBookFile = fopen("KitapYazar.csv","w");
-                    if(writerBookFile == NULL) exit(-1);
-                    printWriterBookList(bookWriterList,totalBookWriter);
-                    print("file just writing****");
-                    writeBookWriterFileFromList(writerBookFile,bookWriterList,&totalBookWriter,0);
-                    fclose(writerBookFile);
+                    // writerBookFile = fopen("KitapYazar.csv","w");
+                    // if(writerBookFile == NULL) exit(-1);
+                    // printWriterBookList(bookWriterList,totalBookWriter);
+                    // print("file just writing****");
+                    // writeBookWriterFileFromList(writerBookFile,bookWriterList,&totalBookWriter,0);
+                    // fclose(writerBookFile);
+                    writeBookWriterFile(writeBookWriterFileFromList,bookWriterList,&totalBookWriter,0);
 
-                    bookBorrowFile = fopen("KitapOdunc.csv","w");
-                    if(bookBorrowFile == NULL) exit(-1);
-                    print("book history file writing");
-                    writeBookBorrowFileFromList(bookBorrowFile,bookBorrowList,&totalBookOperations,0); 
-                    fclose(bookBorrowFile);
+                    // bookBorrowFile = fopen("KitapOdunc.csv","w");
+                    // if(bookBorrowFile == NULL) exit(-1);
+                    // print("book history file writing");
+                    // writeBookBorrowFileFromList(bookBorrowFile,bookBorrowList,&totalBookOperations,0); 
+                    // fclose(bookBorrowFile);
+                    writeBookBorrowFile(writeBookBorrowFileFromList,bookBorrowList,&totalBookOperations,0);
 
-                    print("std file writing");
-                    stdFile = fopen("Ogrenciler.csv","w");
-                    if(stdFile == NULL) exit(-1);
-                    print("std file writing");
-                    writeStdFileFromList(stdFile,stdHead,0);
-                    fclose(stdFile);
-
+                    // print("std file writing");
+                    // stdFile = fopen("Ogrenciler.csv","w");
+                    // if(stdFile == NULL) exit(-1);
+                    // print("std file writing");
+                    // writeStdFileFromList(stdFile,stdHead,0);
+                    // fclose(stdFile);
+                    writeStdFile(writeStdFileFromList,stdHead,0);
             break;
             case book:
                 //* kitap verlieri alınıp otomatik olarak ilgili yerlere atanmıs vaziyette yazarların ve ogrencilerin 
@@ -331,7 +339,7 @@ int main(){
                             scanf("%d",&newBOOK.adet);
                             Result = proceedAddNewBookToLib(&booksHead,&writerHead,newBOOK,totalBookOperations,bookBorrowList,&totalBookWriter,&bookWriterList);
                             if(Result == -1){
-                                printf("%s ISBN already exists in the library",newBOOK.ISBN);
+                                printf("%s ISBN already exists in the library\n",newBOOK.ISBN);
                             }else{
                                 print("book added to writerBookList,bookList,and writers also updated");
                             }
@@ -448,10 +456,20 @@ int main(){
                     }
                 }while(bookMenu != exitBook);
 
-                bookFile = fopen("Kitaplar.csv","w");
-                if(bookFile == NULL) exit(-1);
-                writeBookFileFromBookList(bookFile,booksHead,0);
-                fclose(bookFile);
+                // bookFile = fopen("Kitaplar.csv","w");
+                // if(bookFile == NULL) exit(-1);
+                // writeBookFileFromBookList(bookFile,booksHead,0);
+                // fclose(bookFile);
+                writeBookFile(writeBookFileFromBookList,booksHead,0);
+
+
+                writeBookWriterFile(writeBookWriterFileFromList,bookWriterList,&totalBookWriter,0);
+
+                // writerFile = fopen("YAZARLAR.csv","w");
+                // if(writerFile == NULL) exit(-1);
+                // writeWriterListToWriterFile(writerFile,writerHead,0);
+                // fclose(writerFile);
+                writeWriterFile(writeWriterListToWriterFile,writerHead,0);
 
             break;    
             case writers:
@@ -510,10 +528,11 @@ int main(){
                 }while(writerOpt != exitWriters);
                 
                 //* writer all of the structs to writer files and close the file end of writer operations 
-                writerFile = fopen("YAZARLAR.csv","w");
-                if(writerFile == NULL) exit(-1);
-                writeWriterListToWriterFile(writerFile,writerHead,0);
-                fclose(writerFile);
+                // writerFile = fopen("YAZARLAR.csv","w");
+                // if(writerFile == NULL) exit(-1);
+                // writeWriterListToWriterFile(writerFile,writerHead,0);
+                // fclose(writerFile);
+                writeWriterFile(writeWriterListToWriterFile,writerHead,0);
             
             break;
             case exitMainMenu:
@@ -523,9 +542,59 @@ int main(){
                 print("wrong selection please select options included above");
             break;  
         }
-        
     } while(mainmenuOpt != exitMainMenu);
+
+    //* writing back all off the files by making free all the lists
+
+    writeBookBorrowFile(writeBookBorrowFileFromList,bookBorrowList,&totalBookOperations,1);
+    writeStdFile(writeStdFileFromList,stdHead,1);
+    writeBookFile(writeBookFileFromBookList,booksHead,1);
+    writeBookWriterFile(writeBookWriterFileFromList,bookWriterList,&totalBookWriter,1);
+    writeWriterFile(writeWriterListToWriterFile,writerHead,1);
+
+    return 0;
+
 }
+
+
+ void writeBookFile(void (*write)(),KITAP* booksHead,int isFree){
+
+    FILE* bookFile = fopen("Kitaplar.csv","w");
+    if(bookFile == NULL) exit(-1);
+    write(bookFile,booksHead,isFree);
+    fclose(bookFile);
+ }
+
+ void writeBookBorrowFile(void (*write)(),KITAPODUNC* bookBorrowList,int* totalBookOperations,int isFree){
+    FILE* bookBorrowFile = fopen("KitapOdunc.csv","w");
+    if(bookBorrowFile == NULL) exit(-1);
+    write(bookBorrowFile,bookBorrowList,totalBookOperations,isFree); 
+    fclose(bookBorrowFile);
+ }
+
+ void writeBookWriterFile(void (*write)(),KITAPYAZAR* bookWriter,int* totalBookWriter,int freeList){
+    FILE*  writerBookFile = fopen("KitapYazar.csv","w");
+    if(writerBookFile == NULL) exit(-1);
+    write(writerBookFile,bookWriter,totalBookWriter,freeList);
+    fclose(writerBookFile);
+ }
+
+ void writeStdFile(void (*write)(),OGRENCI* stdHead,int isFree){
+    FILE* stdFile = fopen("Ogrenciler.csv","w");
+    if(stdFile == NULL) exit(-1);
+    write(stdFile,stdHead,isFree);
+    fclose(stdFile);
+ }
+
+ void writeWriterFile(void (*read)(),YAZAR* writerHead,int isFree){
+    FILE* writerFile = fopen("YAZARLAR.csv","w");
+    if(writerFile == NULL) exit(-1);
+    writeWriterListToWriterFile(writerFile,writerHead,isFree);
+    fclose(writerFile);
+
+ }
+
+
 
 char* addNewWriterBookNewRelation(YAZAR* writersHead,int *totalBookWriter,KITAPYAZAR** bookWriterList,char* ISBN,int yazarID){
     int size = log2(*totalBookWriter)+1;
@@ -601,8 +670,10 @@ char* updateBookINFO(KITAP** booksHead,char* ISBN, char* bookName , int count){
     KITAPORNEK* child;
     KITAPORNEK* child2;
     KITAPORNEK* child3;
+    int max;
+    char tmp;
     int newCount = count;
-    int i=0, j=1;
+    int i=0, j=1,k=0;
     int dummyI = 0, mod = 0;
     int found = 0;
     while(parent != NULL && found == 0){
@@ -642,6 +713,17 @@ char* updateBookINFO(KITAP** booksHead,char* ISBN, char* bookName , int count){
                         (child2->EtiketNo)[13+j] = ('0' + mod);
                         j++;
                     }
+                        max = j+12;
+                        for(k=0;k<(j/2);k++){
+                            tmp = (child2->EtiketNo)[k+14];
+                            (child2->EtiketNo)[k+14]  = (child2->EtiketNo)[max];
+                            (child2->EtiketNo)[max] = tmp;
+                            k++;
+                            max --;
+                        }
+
+                        (child2->EtiketNo)[k+15] = '\0';
+
                     child->next = child2;
                     child = child2;
                 }
@@ -707,8 +789,8 @@ void printSelfBook(KITAP *head){
                 printf("state: %s, label:%s \n",tmp2->Durum,tmp2->EtiketNo);
             }
             tmp2 = tmp2->next;
-        print("");
         }
+        print("");
         tmp = tmp->next;
     }
 }
@@ -774,7 +856,6 @@ int proceedAddNewBookToLib(KITAP** booksHead,YAZAR** writerHead,KITAP newBOOK, i
     YAZAR newWriter;
     int size = log2(*totalBookWriter)+1;
     size = pow(2,size);
-    printf("size : %d, totalbookwriter: %d\n",size,*totalBookWriter);
     int isMoreWriter = 1;
     while(bookParent != NULL){
         if(strcmp(bookParent->ISBN,newBOOK.ISBN) == 0){
@@ -793,9 +874,6 @@ int proceedAddNewBookToLib(KITAP** booksHead,YAZAR** writerHead,KITAP newBOOK, i
         while(writerhead->next != NULL){
             writerhead = writerhead->next;
         }
-        printWriterNode(writerhead->yazarID,writerhead->yazarAd,writerhead->yazarSoyad);
-        printf("%s, %s\n",writerhead->yazarAd,newWriter.yazarAd);
-
         if(strcmp(writerhead->yazarAd,newWriter.yazarAd) == 0 ){
             //* yani girilen yazar listeye eklenebilmisse
             print("book writer list updating");
@@ -807,7 +885,7 @@ int proceedAddNewBookToLib(KITAP** booksHead,YAZAR** writerHead,KITAP newBOOK, i
             (*bookWriter)[*totalBookWriter].YazarID = writerhead->yazarID;
             *totalBookWriter = *totalBookWriter+1;
         }
-        printWriterBookList(*bookWriter,*totalBookWriter);
+        //printWriterBookList(*bookWriter,*totalBookWriter);
         printf("more writer(-1 exit)(1 continue):");
         scanf("%d",&isMoreWriter);
     }
@@ -871,8 +949,8 @@ char* removeBookFromList(int totalBookOperations,KITAPODUNC* bookBorrowList,KITA
             tmp = tmp->next;
         }
     }
-    printWriterBookList(*bookWriter,*totalBookWriter);
-    printBOOKS(*booksHead);
+    //printWriterBookList(*bookWriter,*totalBookWriter);
+    //printBOOKS(*booksHead);
 
     return found == 1 ? "desired book deleted" : "book does not found to be deleted";
 }
@@ -955,6 +1033,7 @@ void proceedBookSubmitting(OGRENCI** std ,KITAP **booksHead,char* stdID, int tot
     int i = 0;
     int totalDay = 0;
     int decreased = 0;
+    int submitted = 0;
     print("select one of the barrowed below:");
     while(parent != NULL){
         child = parent->head;
@@ -981,12 +1060,11 @@ void proceedBookSubmitting(OGRENCI** std ,KITAP **booksHead,char* stdID, int tot
     date.gun = day;
     date.ay = month;
     date.yil = year;
-    print("date assigned");
     for(i=0;i<totalBookOperations;i++){
         if(strcmp(((*bookBorrowList)[i]).EtiketNo,label) == 0){
             if(((*bookBorrowList)[i]).islemTipi == 0){
                 ((*bookBorrowList)[i]).islemTipi = 1;
-
+                submitted = 1;
                 totalDay = getDateAsDays(date) - getDateAsDays(((*bookBorrowList)[i]).islemTarihi);
 
                 if(totalDay >15){
@@ -1014,6 +1092,11 @@ void proceedBookSubmitting(OGRENCI** std ,KITAP **booksHead,char* stdID, int tot
                 }
             }
         }
+    }
+    if(submitted == 0){
+        print("given label does not belong to any book, borrowed by those students");
+    }else{
+        print("submitting sucessfull.");
     }
 }
 
@@ -1049,6 +1132,7 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
     int day ; 
     int year;
     int month;
+    int isBorrowed = 0;
     //* gelen ISBN belli bir kitaba ait ve dahası ait olan kitapda odunc alınmamıs ornek oldugunu da biliyoruz
     while(parent != NULL){
         child = parent->head;
@@ -1065,7 +1149,6 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
 
     printf("enter one of the books label above to barrow:");
     scanf("%s",label);
-    print("kitap labeli atandi");
     KITAP* parent2 = *booksHead;
     KITAPORNEK* child2;
 
@@ -1076,7 +1159,6 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
                 if(strcmp(child2->Durum,"RAFTA") == 0){
                     if(strcmp(child2->EtiketNo,label) == 0){
                         //* artık odunc alinacak olan kitap elimizde
-                        print("book verileri ataniyor");
                         //* history'e odunc alinan kitabi ekleyelim 
                         //* kitap uzerindeki labela da ogrencinin numarasını verip ayrılalım
                         
@@ -1084,11 +1166,8 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
                             *bookHistory = (KITAPODUNC*) realloc(*bookHistory,sizeof(KITAPODUNC)*2*size);
                             size = size*2;
                         }
-                        print("1");
                         strcpy((*bookHistory)[*totalBookOperations].EtiketNo,child2->EtiketNo);
-                         print("2");
                         ((*bookHistory)[*totalBookOperations]).islemTipi = 0;
-                         print("3");
                         strcpy((*bookHistory)[*totalBookOperations].ogrID,stdID);
                         printf("enter day.month.year: ");
                         scanf("%d.%d.%d",&day,&month,&year);
@@ -1097,7 +1176,8 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
                         ((*bookHistory)[*totalBookOperations]).islemTarihi.yil = year;
                         (*totalBookOperations)++;
                         strcpy(child2->Durum,stdID);
-                        print("Borrowing done");
+                        print("Borrowing Successfull");
+                        isBorrowed = 1;
 
                     }
                 }
@@ -1105,6 +1185,10 @@ void proceedBookBorrowing(KITAP **booksHead, char* ISBN ,int* totalBookOperation
             }
         }
         parent2 = parent2->next;
+    }
+
+    if(isBorrowed == 0 ){
+        print("given label does not belong to any copy of book");
     }
 }
 
@@ -1128,7 +1212,7 @@ int checkBookState(KITAP** booksHead,char * ISBN){
                 child = child->next;
             }
             if(isExist == 0 ){
-                printf("%s isbn book all samples borrowed",ISBN);
+                printf("%s isbn book all samples borrowed\n",ISBN);
             }
         }
         parent = parent->next;
@@ -1138,21 +1222,25 @@ int checkBookState(KITAP** booksHead,char * ISBN){
 
 
 void printBannedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
-
     OGRENCI* stdHead = std;
+    print("Banned STDS are following ");
+    int found = 0;
     while(stdHead!=NULL){   
-
         if(stdHead->puan < 0){
+            found = 1;
             printStdNode(stdHead);
             print("");
         }
         stdHead = stdHead->next;
     }
 
+    if(found == 0){
+        print("there are any studentds who has negartive points");
+    }
 }
 
 void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
-    int i = 0;
+    int i = 0,j=0;
     OGRENCI *stdHead;
     //* history uzerinde gezerek teslim edilmemis kitapları bulacagız 
     //* teslim edimeyen kitapların ogrenci mumaralarından ogrenci listesi uzerinde gezerek ilgili kisinin bilgilerini yazdıracagız
@@ -1164,13 +1252,12 @@ void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
             while(stdHead != NULL){
                 if(strcmp(stdHead->ogrID,bookHist[i].ogrID) == 0){
                     printStdNode(stdHead);
+                    printBookHistoryItem(bookHist[i]);
                     print("");
                 }
                 stdHead = stdHead->next;
             }
-
         }
-
     }
 
 }
@@ -1178,7 +1265,6 @@ void printUnsubmittedStd(KITAPODUNC* bookHist,int totalOpr,OGRENCI* std){
 
 void readBookBorrowFileToList(FILE* bookProcessFile,KITAPODUNC** bookBorrowList,int* totalBookOperations){
     //* 1234567891012_2,17011020,0,28.12.2022
-    print("read book process file func called");
     KITAPODUNC *tmp =(KITAPODUNC*) malloc(sizeof(KITAPODUNC)*1);
     int read = 0;
     int* count = totalBookOperations;
@@ -1197,7 +1283,6 @@ void readBookBorrowFileToList(FILE* bookProcessFile,KITAPODUNC** bookBorrowList,
         if(read != 6 && !feof(bookProcessFile)){
              print("there was an error while reading the file");
         }else if(read == 6){
-            printf("%s , %s , %d , %d , %d , %d \n",bookStcker,stdId,processType,day,month,year);
             if(size == *count){
                 tmp = (KITAPODUNC*) realloc(tmp,sizeof(KITAPODUNC)*size*2);
                 size = size*2;
@@ -1248,8 +1333,6 @@ void readBooksFileToList(FILE* bookFile,KITAP** booksHead,int totalOperations,KI
             exit(-1);
         }
     }while(!feof(bookFile));
-
-    printBOOKS(*booksHead);
 }
 
 void printBOOKS(KITAP* books){
@@ -1258,9 +1341,10 @@ void printBOOKS(KITAP* books){
     while(tmp != NULL){
         tmp2 = tmp->head; 
         printBookNode(tmp);
+        print(" ");
         tmp = tmp->next;
     }
-    print(" ");
+    
 }
 
 void printBookNode(KITAP* book){
@@ -1278,7 +1362,9 @@ void addBookToList(KITAP** booksHead,char* bookName,char* ISBN, int bookCount,in
 
     int bookC;
     int mod;
-    int i,j = 0;
+    int i,j ,k= 0;
+    char tmp ;
+    int max ;
     KITAP *bookParent = (KITAP*) malloc(sizeof(KITAP)*1);
     bookParent->head = NULL;
     bookParent->next = NULL;
@@ -1304,6 +1390,16 @@ void addBookToList(KITAP** booksHead,char* bookName,char* ISBN, int bookCount,in
             bookC = bookC/10;
             label[j+14] = (mod+'0');
             j++;
+        }
+
+        max = j+13;
+
+       for(k=0;k<(j/2);k++){
+            tmp = label[k+14];
+            label[k+14]  = label[max];
+            label[max] = tmp;
+            k++;
+            max --;
         }
 
         for(j=0;j<totalOperations;j++){
@@ -1350,7 +1446,7 @@ void printStdInfo(OGRENCI* stdHead,char* stdName,KITAP* booksHead,int totalOpr, 
     OGRENCI *tmp = stdHead;
     KITAP *tmp2 = booksHead;
     KITAPORNEK *bookChild;
-    int stdExists, i = 0;
+    int stdExists = 0, i = 0;
     while(tmp!= NULL){
         if(strcmp(tmp->ad,stdName) == 0){
             stdExists = 1;
@@ -1403,11 +1499,22 @@ char* updateStdFromList(OGRENCI **stdHead,char* stdId,char*  stdName,char* stdSu
 }
 
 
-char* removeStdFromList(OGRENCI **stdHead,char* name){
+char* removeStdFromList(OGRENCI **stdHead,char* name,int totalBookOperation,KITAPODUNC* bookHistory){
     OGRENCI *tmp = *stdHead;
+    KITAPODUNC* tmp2;
+    int allowed = 1;
+    int i = 0;
 
     while(tmp != NULL){
         if(strcmp(tmp->ad,name) == 0){
+            
+            while(i<totalBookOperation){
+                if(strcmp(tmp->ogrID,bookHistory[i].ogrID) == 0 && bookHistory[i].islemTipi == 0){
+                   return "student has unsubmitted book so he/she can not be deleted";
+                }
+                i++;                 
+            }
+
             if(tmp->prev == NULL){
                 //* head goes to be deleted 
                 *stdHead = tmp->next;
@@ -1450,7 +1557,6 @@ void printStdList(OGRENCI* head){
 }
 
 void readStdFromFile(FILE* stdFile,OGRENCI** stdHead){
-    printf("read func called\n");
     int read = 0;
      char number[9];
     char name[30];
@@ -1462,8 +1568,7 @@ void readStdFromFile(FILE* stdFile,OGRENCI** stdHead){
         if(read != 4 && !feof(stdFile)){
             print("there was an error while reading the file");
         }else if(read == 4 ){
-            print("add to list calling");
-            print(addStdToList(stdHead,number,name,surname,point));
+            addStdToList(stdHead,number,name,surname,point);
         }
 
         if(ferror(stdFile)){
@@ -1591,7 +1696,6 @@ void readBookWriterFileToList(FILE *file, KITAPYAZAR** bookWriter,int* totalWrit
 void writeWriterListToWriterFile(FILE *file,YAZAR *head,int freeList){
     YAZAR *tmp = head;
     YAZAR *prev;
-
     do{
         fprintf(file,"%d,%s,%s\n",tmp->yazarID,tmp->yazarAd,tmp->yazarSoyad);
         if(ferror(file)) print("there was an error while writing writers to file");
@@ -1600,7 +1704,6 @@ void writeWriterListToWriterFile(FILE *file,YAZAR *head,int freeList){
         if(freeList == 1){
             free(prev);
         }
-           
     }while(tmp != NULL);
 }
 
@@ -1669,11 +1772,9 @@ void printWriterNode(int id,char* name,char* surname){
 void readWriterFile(FILE* file,YAZAR **head){
     int read = 0;
     //* 8, Jorge, Nocedal
-
     int id;
     char n1[30];
     char n2[30];
-
     do{
         read = fscanf(file,"%d,%29[^,],%29[^\n]\n",&id,n1,n2);
         
@@ -1682,8 +1783,6 @@ void readWriterFile(FILE* file,YAZAR **head){
             exit(-1);
         }else if(read == 3){
             addWriterToList(head,n1,n2);
-            printf(" read value is :%d\n",read);
-            printWriters(*head);
         }
         if(ferror(file)){
             print("there was an error while reading the Writer file");
@@ -1695,7 +1794,6 @@ void readWriterFile(FILE* file,YAZAR **head){
 char* addWriterToList(YAZAR** head,char* writerName,char* writerSurname){
     YAZAR *tmp = (YAZAR*) malloc(sizeof(YAZAR)*1);
     YAZAR *tmp2 = *head;
-    // tmp->yazarID = writerID;
     strcpy(tmp->yazarAd,writerName);
     strcpy(tmp->yazarSoyad,writerSurname);
     tmp->next = NULL;
@@ -1713,7 +1811,6 @@ char* addWriterToList(YAZAR** head,char* writerName,char* writerSurname){
         tmp->yazarID = (tmp2->yazarID) +1;
         //printf("%d\n",tmp2->yazarID);
         tmp2->next = tmp;
-        printDiv();
     }
     return "writer added to list";
 }
